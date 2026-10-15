@@ -46,6 +46,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         if (enabled) ReminderScheduler.schedule(app) else ReminderScheduler.cancel(app)
     }
 
+    /** Shows a short message in the Snackbar of the main screen. */
+    fun showMessage(text: String) {
+        eventChannel.trySend(text)
+    }
+
     /** Runs the reminder check immediately, so that the user can see how it looks. */
     fun sendTestNotification() {
         try {

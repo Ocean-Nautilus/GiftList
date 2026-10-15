@@ -7,6 +7,7 @@ import com.example.wishlist228.GiftListApplication
 import com.example.wishlist228.models.Friend
 import com.example.wishlist228.models.GiftStatus
 import com.example.wishlist228.models.GiftWithTags
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
 /**
@@ -58,6 +59,9 @@ class BirthdayReminderWorker(
                 )
             }
             Result.success()
+        } catch (e: CancellationException) {
+            // The work was stopped by the system: let the coroutine finish
+            throw e
         } catch (e: Exception) {
             // A reminder is not critical: do not crash, try again at the next run
             Result.retry()
