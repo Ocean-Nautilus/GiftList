@@ -1,6 +1,8 @@
 package com.example.wishlist228.utils
 
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
@@ -28,6 +30,10 @@ object DateUtils {
         nextBirthday(birthdayEpochDay, today).year - LocalDate.ofEpochDay(birthdayEpochDay).year
 
     fun formatFull(epochDay: Long): String = LocalDate.ofEpochDay(epochDay).format(fullFormatter)
+
+    /** Shows a time stamp in milliseconds (for example, when a gift was added) as a date. */
+    fun formatTimestamp(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(fullFormatter)
 
     fun formatDayMonth(epochDay: Long): String =
         LocalDate.ofEpochDay(epochDay).format(dayMonthFormatter)
