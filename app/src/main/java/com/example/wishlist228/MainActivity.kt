@@ -1,83 +1,48 @@
 package com.example.wishlist228
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CardGiftcard
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wishlist228.ui.navigation.GiftListApp
+import com.example.wishlist228.ui.theme.GiftListTheme
+import com.example.wishlist228.ui.theme.isDarkTheme
+import com.example.wishlist228.viewmodels.SettingsViewModel
 
-sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    object Wishlist : Screen("wishlist", "Вишлист", Icons.Default.CardGiftcard)
-    object Friends : Screen("friends", "Друзья", Icons.Default.People)
-    object Ideas : Screen("ideas", "Идеи", Icons.Default.Explore)
-}
-
+/** The only activity: it hosts the Compose UI, all screens are composables. */
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            OhMyWishesTheme {
-                MainApp()
+            val settingsViewModel: SettingsViewModel = viewModel()
+            val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+            val darkTheme = isDarkTheme(settings.themeMode)
+
+            // Draw behind the system bars and keep their icons readable in the chosen theme
+            DisposableEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(LIGHT_SCRIM, DARK_SCRIM) { darkTheme }
+                )
+                onDispose { }
+            }
+
+            GiftListTheme(themeMode = settings.themeMode) {
+                GiftListApp(settingsViewModel = settingsViewModel)
             }
         }
     }
-}
 
-@Composable
-fun MainApp(viewModel: WishlistViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsState()
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Wishlist) }
-    var showAddBottomSheet by remember { mutableStateOf(false) }
-
-    Scaffold(
-        bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                val items = listOf(Screen.Wishlist, Screen.Friends, Screen.Ideas)
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
-                        selected = currentScreen == screen,
-                        onClick = { currentScreen = screen },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = OhMyPink,
-                            selectedTextColor = OhMyPink,
-                            indicatorColor = OhMyPink.copy(alpha = 0.1f)
-                        )
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            when (currentScreen) {
-                Screen.Wishlist -> WishlistScreen(
-                    state = uiState,
-                    onCategorySelected = { viewModel.selectCategory(it) },
-                    onReserveWish = { viewModel.toggleReservation(it) },
-                    onAddWishClick = { showAddBottomSheet = true }
-                )
-                Screen.Friends -> FriendsScreen(friends = uiState.friends)
-                Screen.Ideas -> IdeaFeedScreen(collections = uiState.collections)
-            }
-        }
-
-        if (showAddBottomSheet) {
-            AddWishBottomSheet(
-                onDismiss = { showAddBottomSheet = false },
-                onAddWish = { title, price, link, priority ->
-                    viewModel.addWish(title, price, link, priority)
-                }
-            )
-        }
+    private companion object {
+        val LIGHT_SCRIM = Color.argb(0xE6, 0xFF, 0xFF, 0xFF)
+        val DARK_SCRIM = Color.argb(0x80, 0x1B, 0x1B, 0x1B)
     }
 }

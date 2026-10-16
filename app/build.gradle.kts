@@ -2,20 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.wishlist228"
-    compileSdk {
-        version = release(36)
-        buildFeatures {
-            compose = true
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.wishlist228"
-        minSdk = 24
+        // java.time (LocalDate) is used for birthdays, it is available from API 26
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -45,43 +42,47 @@ android {
 }
 
 dependencies {
-    // Базовые компоненты Android
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    implementation("androidx.activity:activity-compose:1.9.2")
+    // Core Android
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
 
-    // Compose Bill of Materials (BOM) — единый управленец версий Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.09.02")
+    // Jetpack Compose (Bill of Materials keeps all Compose versions consistent)
+    val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
 
-    // Jetpack Compose UI & Material 3
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
+    // Image loading (gift photos by URL)
+    implementation(libs.coil.compose)
 
-    // ViewModel, Навигация и Coil (для загрузки картинок)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.navigation:navigation-compose:2.8.2")
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    // Database: Room (SQLite), the annotation processor runs through KSP
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
-    // Инструменты отладки
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // App settings
+    implementation(libs.androidx.datastore.preferences)
 
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    // Birthday reminders (the "feature" of the app)
+    implementation(libs.androidx.work.runtime.ktx)
 
-    // Основные зависимости Compose и Coil (остаются как были)
-    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.compose.material:material-icons-extended")
+    // Charts for the statistics screen
+    implementation(libs.mpandroidchart)
 
-    // Тестовые зависимости (исправляют ошибки на вашем скриншоте):
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    // Debug tooling
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

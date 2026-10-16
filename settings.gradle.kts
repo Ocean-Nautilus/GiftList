@@ -16,9 +16,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // MPAndroidChart is published only on JitPack
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
-rootProject.name = "wishlist228"
+rootProject.name = "GiftList"
 include(":app")
- 
